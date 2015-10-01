@@ -1,0 +1,4 @@
+2015-10-01 03:16:37.704 INFO:  ArcticFWActor(arcticFWActorWrapper).init(userCmd=UserCmd('', state=ready), timeLim=5, getStatus=False)
+2015-10-01 03:16:40.705 INFO:  UserCmd('', state=done)
+2015-10-01 03:16:40.707 INFO:  ArcticFWActor(arcticFWActorWrapper).server.state=Listening
+2015-10-01 03:16:40.707 INFO:  UserCmd('home', state=failed, textMsg='not implemented')
