@@ -1,0 +1,9 @@
+*.scon*
+*.pyc
+*.so
+*.os
+*.dylib
+*.log
+python/*.egg-info/
+ups/*.cfgc
+tests/.tests
