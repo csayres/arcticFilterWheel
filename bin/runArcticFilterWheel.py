@@ -11,14 +11,15 @@ from arcticFilterWheel import ArcticFWActor
 
 
 UserPort = 37000
-homeDir = os.getenv("HOME")
-logDir = os.path.join(homeDir, "logs/arcticFilterWheel")
+# for now no logging
+# homeDir = os.getenv("HOME")
+# logDir = os.path.join(homeDir, "logs/arcticFilterWheel")
 
-try:
-    startFileLogging(logDir)
-except KeyError:
-   # don't start logging
-   pass
+# try:
+#     startFileLogging(logDir)
+# except KeyError:
+#    # don't start logging
+#    pass
 
 if __name__ == "__main__":
     print("arcticFilterWheel running on port %i"%UserPort)
