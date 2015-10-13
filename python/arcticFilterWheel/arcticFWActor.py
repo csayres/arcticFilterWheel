@@ -75,13 +75,12 @@ class ArcticFWActor(Actor):
         self.moveCmd = UserCmd()
         self.moveCmd.setState(self.moveCmd.Done)
         self.pollTimer = Timer()
-        self.filterWheel = self.FilterWheelClass()
-        self.filterWheel.connect()
         if fakeFilterWheel:
             self.FilterWheelClass = FakeFilterWheel
         else:
             self.FilterWheelClass = FilterWheel
-        self.filterWheel = None
+        self.filterWheel = self.FilterWheelClass()
+        self.filterWheel.connect()
         Actor.__init__(self,
             userPort = userPort,
             maxUsers = 1,
