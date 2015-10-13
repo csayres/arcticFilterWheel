@@ -7,12 +7,13 @@ from RO.Comm.TwistedTimer import Timer
 MoveTime = 3 # seconds for all moves
 
 StatusDict = {
-    "id": None,
-    "encoder": None,
+    "id": 7,
+    "currentEncoder": "NaN",
     "motor": 0,
     "hall": "0000",
-    "position": None,
-    "power": None
+    "position": 0,
+    "power": None,
+    "desiredStep": "NaN"
 }
 
 
@@ -25,7 +26,7 @@ class FilterWheel(object):
         StatusDict["motor"]=0
 
 
-    def setup(self):
+    def connect(self):
         """
         initiate filter wheel communication
         """
@@ -37,7 +38,7 @@ class FilterWheel(object):
         """
         # emulate the block
         time.sleep(3)
-        StatusDict["id"] = 1
+        # StatusDict["id"] = 1
         return StatusDict["id"]
 
     def stop(self):

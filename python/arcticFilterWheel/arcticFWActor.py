@@ -17,35 +17,47 @@ from .fakeFilterWheel import FilterWheel as FakeFilterWheel
 
 class ArcticFWStatus(object):
     def __init__(self):
-        self.id = "?"
-        self.encoder = "?"
-        self.motor = "?"
-        self.hall = "?"
-        self.position = "?"
-        self.power = "?"
+        self.id = 0
+        self.currentEncoder = "NaN"
+        self.motor = 0
+        # self.hall = "?"
+        self.position = 1
+        # self.power = "?"
+        self.isHomed = 0
+        self.isHoming = 0
+        self.desiredStep = "NaN"
+        self.currentStep = "NaN"
 
     @property
     def kwMap(self):
-        return [
-            ("wheelWheelID", self.id),
+        return dict((
+            ("wheelID", self.id),
             ("filterID", self.position),
-            ("filterMoving", self.motor),
-            ("filterEncoder", self.encoder)
-        ]
+            ("isMoving", self.motor),
+            ("isHomed", self.isHomed),
+            ("isHoming", self.isHoming),
+            ("encoderPos", self.currentEncoder),
+            ("desiredStep", self.desiredStep),
+            ("currentStep", self.currentStep),
+        ))
 
     @property
     def moveStr(self):
-        return "%s=%s"%(self.kwMap[2])
+        # todo: add a move timer for a countdown display in TUI
+        kw = "isMoving"
+        return "%s=%s"%(kw, self.kwMap[kw])
 
     @property
     def statusStr(self):
-        return "; ".join(["%s=%s"%(kw, str(val)) for kw, val in self.kwMap])
+        # todo: only output a changed status value?
+        return "; ".join(["%s=%s"%(kw, str(val)) for kw, val in self.kwMap.iteritems()])
 
 class ArcticFWActor(Actor):
     Facility = syslog.LOG_LOCAL1
     DefaultTimeLim = 5 # default time limit, in seconds
     PollTime = 0.05 # seconds
     MoveRange = range(1,7)
+    # State options
     def __init__(self,
         name,
         userPort,
@@ -87,10 +99,11 @@ class ArcticFWActor(Actor):
         """
         userCmd = expandUserCmd(userCmd)
         log.info("%s.init(userCmd=%s, timeLim=%s, getStatus=%s)" % (self, userCmd, timeLim, getStatus))
+        print("%s.init(userCmd=%s, timeLim=%s, getStatus=%s)" % (self, userCmd, timeLim, getStatus))
         # initialize the fw, command status after
         self.filterWheel = self.FilterWheelClass()
-        self.filterWheel.setup()
-        self.filterWheel.home() # blocks
+        self.filterWheel.connect()
+        # self.cmd_home(expandUserCmd(None)) # blocks and sets isHomed flag
         if getStatus:
             self.cmd_status(userCmd) # sets done
         else:
@@ -101,6 +114,8 @@ class ArcticFWActor(Actor):
         """! Implement the init command
         @param[in]  userCmd  a twistedActor command with a parsedCommand attribute
         """
+        log.info("%s.cmd_init(userCmd=%s)"%(self, str(userCmd)))
+        print("%s.cmd_init(userCmd=%s)"%(self, str(userCmd)))
         self.init(userCmd, getStatus=True)
         # userCmd.setState(userCmd.Done)
         return True
@@ -109,10 +124,14 @@ class ArcticFWActor(Actor):
         """! Implement the ping command
         @param[in]  userCmd  a twistedActor command with a parsedCommand attribute
         """
+        log.info("%s.cmd_ping(userCmd=%s)"%(self, str(userCmd)))
+        print("%s.cmd_ping(userCmd=%s)"%(self, str(userCmd)))
         userCmd.setState(userCmd.Done, textMsg="alive")
         return True
 
     def cmd_stop(self, userCmd):
+        log.info("%s.cmd_stop(userCmd=%s)"%(self, str(userCmd)))
+        print("%s.cmd_stop(userCmd=%s)"%(self, str(userCmd)))
         if not self.moveCmd.isDone:
             self.moveCmd.setState(self.moveCmd.Failed, "stop commanded")
         self.filterWheel.stop()
@@ -121,22 +140,34 @@ class ArcticFWActor(Actor):
 
     def cmd_move(self, userCmd):
         desPos = int(userCmd.parsedCommand.parsedPositionalArgs[0])
+        log.info("%s.cmd_move(userCmd=%s) desPos: %i"%(self, userCmd, desPos))
+        print("%s.cmd_move(userCmd=%s) desPos: %i"%(self, userCmd, desPos))
         if desPos not in self.MoveRange:
             raise ParseError("desPos must be one of %s for move command"%(str(self.MoveRange),))
-        if not self.moveCmd.isDone:
+        if not self.status.isHomed:
+            userCmd.setState(userCmd.Failed, "cannot command move, home filter wheel first.")
+        elif not self.moveCmd.isDone:
             userCmd.setState(userCmd.Failed, "filter wheel is moving")
         else:
             self.moveCmd = userCmd
             if not self.moveCmd.isActive:
                 self.moveCmd.setState(self.moveCmd.Running)
-            self.filterWheel.moveToPosition(desPos)
+            self.filterWheel.moveToPosition(desPos - 1) # filterwheel is 0 indexed
             self.getStatus()
             self.writeToUsers("i", self.status.moveStr, cmd=userCmd)
             self.pollStatus()
         return True
 
     def cmd_home(self, userCmd):
+        log.info("%s.cmd_home(userCmd=%s)"%(self, str(userCmd)))
+        print("%s.cmd_home(userCmd=%s)"%(self, str(userCmd)))
+        self.status.isHoming = 1
+        # send out status (basically announce I'm homing)
+        self.cmd_status(userCmd, setDone=False)
         self.filterWheel.home() # blocks
+        self.status.isHomed = 1
+        self.status.isHoming = 0
+        self.cmd_status(userCmd, setDone=False)
         userCmd.setState(userCmd.Done)
         return True
 
@@ -144,6 +175,8 @@ class ArcticFWActor(Actor):
         """! Implement the status command
         @param[in]  userCmd  a twistedActor command with a parsedCommand attribute
         """
+        log.info("%s.cmd_status(userCmd=%s)"%(self, str(userCmd)))
+        print("%s.cmd_status(userCmd=%s)"%(self, str(userCmd)))
         # statusStr = self.getCameraStatus()
         # self.writeToUsers("i", statusStr, cmd=userCmd)
         self.getStatus()
@@ -159,6 +192,8 @@ class ArcticFWActor(Actor):
         self.getStatus()
         if self.status.motor == 0:
             if not self.moveCmd.isDone:
+                log.info("current move done")
+                print("current move done")
                 self.cmd_status(self.moveCmd) # status will set command done
         else:
             # motor is still moving, continue polling
@@ -168,7 +203,11 @@ class ArcticFWActor(Actor):
         """! A generic status command
         @param[in] userCmd a twistedActor UserCmd or none
         """
+        fwStatus = self.filterWheel.status()
+        print("new FW STATUS: %s"%str(fwStatus))
         for key, val in self.filterWheel.status().iteritems():
+            if key == "position":
+                val += 1 # filter wheel is zero indexed
             setattr(self.status, key, val)
 
 
