@@ -75,6 +75,8 @@ class ArcticFWActor(Actor):
         self.moveCmd = UserCmd()
         self.moveCmd.setState(self.moveCmd.Done)
         self.pollTimer = Timer()
+        self.filterWheel = self.FilterWheelClass()
+        self.filterWheel.connect()
         if fakeFilterWheel:
             self.FilterWheelClass = FakeFilterWheel
         else:
@@ -101,8 +103,8 @@ class ArcticFWActor(Actor):
         log.info("%s.init(userCmd=%s, timeLim=%s, getStatus=%s)" % (self, userCmd, timeLim, getStatus))
         print("%s.init(userCmd=%s, timeLim=%s, getStatus=%s)" % (self, userCmd, timeLim, getStatus))
         # initialize the fw, command status after
-        self.filterWheel = self.FilterWheelClass()
-        self.filterWheel.connect()
+        # self.filterWheel = self.FilterWheelClass()
+        # self.filterWheel.connect()
         # self.cmd_home(expandUserCmd(None)) # blocks and sets isHomed flag
         if getStatus:
             self.cmd_status(userCmd) # sets done
