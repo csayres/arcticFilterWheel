@@ -15,6 +15,8 @@ from filter import FilterWheel
 
 from .fakeFilterWheel import FilterWheel as FakeFilterWheel
 
+UserPort = 37000
+
 class ArcticFWStatus(object):
     def __init__(self):
         self.id = 0
@@ -60,7 +62,7 @@ class ArcticFWActor(Actor):
     # State options
     def __init__(self,
         name,
-        userPort,
+        userPort = UserPort,
         commandSet = arcticFWCommandSet,
         fakeFilterWheel = False,
     ):
