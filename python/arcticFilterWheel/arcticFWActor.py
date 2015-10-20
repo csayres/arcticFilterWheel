@@ -206,8 +206,6 @@ class ArcticFWActor(Actor):
         """! A generic status command
         @param[in] userCmd a twistedActor UserCmd or none
         """
-        fwStatus = self.filterWheel.status()
-        print("new FW STATUS: %s"%str(fwStatus))
         for key, val in self.filterWheel.status().iteritems():
             if key == "position":
                 val += 1 # filter wheel is zero indexed
