@@ -101,7 +101,7 @@ class ArcticFWActor(Actor):
         """
         userCmd = expandUserCmd(userCmd)
         log.info("%s.init(userCmd=%s, timeLim=%s, getStatus=%s)" % (self, userCmd, timeLim, getStatus))
-        print("%s.init(userCmd=%s, timeLim=%s, getStatus=%s)" % (self, userCmd, timeLim, getStatus))
+        # print("%s.init(userCmd=%s, timeLim=%s, getStatus=%s)" % (self, userCmd, timeLim, getStatus))
         # initialize the fw, command status after
         # self.filterWheel = self.FilterWheelClass()
         # self.filterWheel.connect()
@@ -117,7 +117,7 @@ class ArcticFWActor(Actor):
         @param[in]  userCmd  a twistedActor command with a parsedCommand attribute
         """
         log.info("%s.cmd_init(userCmd=%s)"%(self, str(userCmd)))
-        print("%s.cmd_init(userCmd=%s)"%(self, str(userCmd)))
+        # print("%s.cmd_init(userCmd=%s)"%(self, str(userCmd)))
         self.init(userCmd, getStatus=True)
         # userCmd.setState(userCmd.Done)
         return True
@@ -127,13 +127,13 @@ class ArcticFWActor(Actor):
         @param[in]  userCmd  a twistedActor command with a parsedCommand attribute
         """
         log.info("%s.cmd_ping(userCmd=%s)"%(self, str(userCmd)))
-        print("%s.cmd_ping(userCmd=%s)"%(self, str(userCmd)))
+        # print("%s.cmd_ping(userCmd=%s)"%(self, str(userCmd)))
         userCmd.setState(userCmd.Done, textMsg="alive")
         return True
 
     def cmd_stop(self, userCmd):
         log.info("%s.cmd_stop(userCmd=%s)"%(self, str(userCmd)))
-        print("%s.cmd_stop(userCmd=%s)"%(self, str(userCmd)))
+        # print("%s.cmd_stop(userCmd=%s)"%(self, str(userCmd)))
         if not self.moveCmd.isDone:
             self.moveCmd.setState(self.moveCmd.Failed, "stop commanded")
         self.filterWheel.stop()
@@ -143,7 +143,7 @@ class ArcticFWActor(Actor):
     def cmd_move(self, userCmd):
         desPos = int(userCmd.parsedCommand.parsedPositionalArgs[0])
         log.info("%s.cmd_move(userCmd=%s) desPos: %i"%(self, userCmd, desPos))
-        print("%s.cmd_move(userCmd=%s) desPos: %i"%(self, userCmd, desPos))
+        # print("%s.cmd_move(userCmd=%s) desPos: %i"%(self, userCmd, desPos))
         if desPos not in self.MoveRange:
             # raise ParseError("desPos must be one of %s for move command"%(str(self.MoveRange),))
             userCmd.setState(userCmd.Failed, "desPos must be one of %s for move command"%(str(self.MoveRange),))
@@ -163,7 +163,7 @@ class ArcticFWActor(Actor):
 
     def cmd_home(self, userCmd):
         log.info("%s.cmd_home(userCmd=%s)"%(self, str(userCmd)))
-        print("%s.cmd_home(userCmd=%s)"%(self, str(userCmd)))
+        # print("%s.cmd_home(userCmd=%s)"%(self, str(userCmd)))
         self.status.isHoming = 1
         # send out status (basically announce I'm homing)
         self.cmd_status(userCmd, setDone=False)
@@ -179,7 +179,7 @@ class ArcticFWActor(Actor):
         @param[in]  userCmd  a twistedActor command with a parsedCommand attribute
         """
         log.info("%s.cmd_status(userCmd=%s)"%(self, str(userCmd)))
-        print("%s.cmd_status(userCmd=%s)"%(self, str(userCmd)))
+        # print("%s.cmd_status(userCmd=%s)"%(self, str(userCmd)))
         # statusStr = self.getCameraStatus()
         # self.writeToUsers("i", statusStr, cmd=userCmd)
         self.getStatus()
