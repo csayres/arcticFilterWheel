@@ -29,6 +29,9 @@ class TestArcticFilterWheel(TestCase):
     def arcticFWActor(self):
         return self.aw.actor
 
+    def fakeHome(self):
+        self.arcticFWActor.status.isHomed = 1
+
     def commandActor(self, cmdStr, shouldFail=False):
         d = Deferred()
         cmd = UserCmd(cmdStr=cmdStr)
@@ -68,26 +71,28 @@ class TestArcticFilterWheel(TestCase):
 
     def testMove1(self):
         print "testMove1"
+        self.fakeHome()
         d = self.commandActor(cmdStr="move 1")
         def checkPos(cb):
-            self.assertTrue(self.arcticFWActor.status.pos==1)
+            self.assertTrue(self.arcticFWActor.status.position==1)
         d.addCallback(checkPos)
         return d
 
     def testMove5(self):
         print "testMove5"
+        self.fakeHome()
         d = self.commandActor(cmdStr="move 5")
         def checkPos(cb):
-            self.assertTrue(self.arcticFWActor.status.pos==5)
+            self.assertTrue(self.arcticFWActor.status.position==5)
         d.addCallback(checkPos)
         return d
 
     def testMove15(self):
         print "testMove15"
-        prevPos = self.arcticFWActor.status.pos
+        prevPos = self.arcticFWActor.status.position
         d = self.commandActor(cmdStr="move 15", shouldFail=True)
         def checkPos(cb):
-            self.assertTrue(self.arcticFWActor.status.pos==prevPos)
+            self.assertTrue(self.arcticFWActor.status.position==prevPos)
         d.addCallback(checkPos)
         return d
 

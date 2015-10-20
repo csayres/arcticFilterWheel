@@ -6,7 +6,6 @@ import syslog
 from RO.Comm.TwistedTimer import Timer
 
 from twistedActor import Actor, expandUserCmd, log, UserCmd
-from twistedActor.parse import ParseError
 
 from .commandSet import arcticFWCommandSet
 from .version import __version__
@@ -146,8 +145,9 @@ class ArcticFWActor(Actor):
         log.info("%s.cmd_move(userCmd=%s) desPos: %i"%(self, userCmd, desPos))
         print("%s.cmd_move(userCmd=%s) desPos: %i"%(self, userCmd, desPos))
         if desPos not in self.MoveRange:
-            raise ParseError("desPos must be one of %s for move command"%(str(self.MoveRange),))
-        if not self.status.isHomed:
+            # raise ParseError("desPos must be one of %s for move command"%(str(self.MoveRange),))
+            userCmd.setState(userCmd.Failed, "desPos must be one of %s for move command"%(str(self.MoveRange),))
+        elif not self.status.isHomed:
             userCmd.setState(userCmd.Failed, "cannot command move, home filter wheel first.")
         elif not self.moveCmd.isDone:
             userCmd.setState(userCmd.Failed, "filter wheel is moving")
