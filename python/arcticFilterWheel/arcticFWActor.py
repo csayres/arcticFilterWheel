@@ -22,18 +22,20 @@ class ArcticFWStatus(object):
         self.currentEncoder = "NaN"
         self.motor = 0
         # self.hall = "?"
-        self.position = 1
+        self.position = 0
         # self.power = "?"
         self.isHomed = 0
         self.isHoming = 0
         self.desiredStep = "NaN"
         self.currentStep = "NaN"
+        self._cmdFilterID = "NaN"
 
     @property
     def kwMap(self):
         return dict((
             ("wheelID", self.id),
             ("filterID", self.position),
+            ("cmdFilterID", self.cmdFilterID)
             ("isMoving", self.motor),
             ("isHomed", self.isHomed),
             ("isHoming", self.isHoming),
@@ -43,10 +45,24 @@ class ArcticFWStatus(object):
         ))
 
     @property
+    def cmdFilterID(self):
+        if self._cmdFilterID == "NaN" and not 1 in [self.motor, self.isHoming] and self.isHomed:
+            # asked for commanded filter but currently set to NaN, everything looks fine
+            # set it to commanded ID
+            self._cmdFilterID = self.position
+        return self._cmdFilterID # may return none
+
+    @cmdFilterID.settr
+    def cmdFilterID(self, value):
+        self._cmdFilterID = value
+
+    @property
     def moveStr(self):
-        # todo: add a move timer for a countdown display in TUI
-        kw = "isMoving"
-        return "%s=%s"%(kw, self.kwMap[kw])
+        statusList = []
+        for kw in ["isMoving", "cmdFilterID"]:
+            statusList.append("%s=%s"%(kw, str(self.kwMap[kw])))
+        return "; ".join(statusList)
+
 
     @property
     def statusStr(self):
@@ -155,6 +171,7 @@ class ArcticFWActor(Actor):
             self.moveCmd = userCmd
             if not self.moveCmd.isActive:
                 self.moveCmd.setState(self.moveCmd.Running)
+            self.status.cmdFilterID = desPos
             self.filterWheel.moveToPosition(desPos - 1) # filterwheel is 0 indexed
             self.getStatus()
             self.writeToUsers("i", self.status.moveStr, cmd=userCmd)
