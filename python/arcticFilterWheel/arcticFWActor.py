@@ -60,7 +60,7 @@ class ArcticFWStatus(object):
     def moveStr(self):
         statusList = []
         for kw in ["isMoving", "cmdFilterID"]:
-            print "kw ", kw, self.kwMap[kw]
+            print "kw ", kw, self.kwMap[kw], "motor ", self.motor, "cmdFilterID ", self.cmdFilterID
             statusList.append("%s=%s"%(kw, str(self.kwMap[kw])))
         return "; ".join(statusList)
 
