@@ -52,8 +52,7 @@ class ArcticFWStatus(object):
             self._cmdFilterID = self.position
         return self._cmdFilterID # may return none
 
-    @cmdFilterID.setter
-    def cmdFilterID(self, value):
+    def setCmdFilterID(self, value):
         self._cmdFilterID = value
 
     @property
@@ -172,7 +171,7 @@ class ArcticFWActor(Actor):
             self.moveCmd = userCmd
             if not self.moveCmd.isActive:
                 self.moveCmd.setState(self.moveCmd.Running)
-            self.status.cmdFilterID = desPos
+            self.status.setCmdFilterID(desPos)
             self.filterWheel.moveToPosition(desPos - 1) # filterwheel is 0 indexed
             self.getStatus()
             self.writeToUsers("i", self.status.moveStr, cmd=userCmd)
