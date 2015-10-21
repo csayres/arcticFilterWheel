@@ -223,9 +223,13 @@ class ArcticFWActor(Actor):
         """! A generic status command
         @param[in] userCmd a twistedActor UserCmd or none
         """
+        print "setting status values: "
         for key, val in self.filterWheel.status().iteritems():
             if key == "position":
                 val += 1 # filter wheel is zero indexed
+            print "key: ", key, "value: ", val
+            if key == "motor" and val == 3:
+                print "ALERRRRTTTTT!!!!!!!!!!!!!!!!!!!!"
             setattr(self.status, key, val)
 
 
