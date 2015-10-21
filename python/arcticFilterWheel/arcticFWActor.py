@@ -57,11 +57,8 @@ class ArcticFWStatus(object):
 
     @property
     def moveStr(self):
-        statusList = []
-        for kw in ["isMoving", "cmdFilterID"]:
-            print "kw ", kw, self.kwMap[kw], "motor ", self.motor, "cmdFilterID ", self.cmdFilterID
-            statusList.append("%s=%s"%(kw, str(self.kwMap[kw])))
-        return "; ".join(statusList)
+        # hack! when a move is commanded motor value returned by status is 3!! WTF?!
+        return "isMoving=1; cmdFilterID=%s"%(self.cmdFilterID,)
 
 
     @property
@@ -223,13 +220,9 @@ class ArcticFWActor(Actor):
         """! A generic status command
         @param[in] userCmd a twistedActor UserCmd or none
         """
-        print "setting status values: "
         for key, val in self.filterWheel.status().iteritems():
             if key == "position":
                 val += 1 # filter wheel is zero indexed
-            print "key: ", key, "value: ", val
-            if key == "motor" and val == 3:
-                print "ALERRRRTTTTT!!!!!!!!!!!!!!!!!!!!"
             setattr(self.status, key, val)
 
 
