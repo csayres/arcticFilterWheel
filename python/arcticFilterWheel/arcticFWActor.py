@@ -40,7 +40,7 @@ class ArcticFWStatus(object):
             ("isHomed", self.isHomed),
             ("isHoming", self.isHoming),
             ("encoderPos", self.currentEncoder),
-            ("desiredStep", self.desiredStep),
+            ("desiredStep", "NaN" if self.desiredStep is None else self.desiredStep),
             ("currentStep", self.currentStep),
         ))
 
@@ -60,6 +60,7 @@ class ArcticFWStatus(object):
     def moveStr(self):
         statusList = []
         for kw in ["isMoving", "cmdFilterID"]:
+            print "kw ", kw, self.kwMap[kw]
             statusList.append("%s=%s"%(kw, str(self.kwMap[kw])))
         return "; ".join(statusList)
 
@@ -223,9 +224,7 @@ class ArcticFWActor(Actor):
         """! A generic status command
         @param[in] userCmd a twistedActor UserCmd or none
         """
-        print "fw status:"
         for key, val in self.filterWheel.status().iteritems():
-            print "key: ", key, "val: ", val
             if key == "position":
                 val += 1 # filter wheel is zero indexed
             setattr(self.status, key, val)
