@@ -35,7 +35,7 @@ class ArcticFWStatus(object):
         return dict((
             ("wheelID", self.id),
             ("filterID", self.position),
-            ("cmdFilterID", self.cmdFilterID)
+            ("cmdFilterID", self.cmdFilterID),
             ("isMoving", self.motor),
             ("isHomed", self.isHomed),
             ("isHoming", self.isHoming),
@@ -52,7 +52,7 @@ class ArcticFWStatus(object):
             self._cmdFilterID = self.position
         return self._cmdFilterID # may return none
 
-    @cmdFilterID.settr
+    @cmdFilterID.setter
     def cmdFilterID(self, value):
         self._cmdFilterID = value
 
