@@ -89,6 +89,8 @@ class ArcticFWActor(Actor):
         self.status = ArcticFWStatus()
         self.moveCmd = UserCmd()
         self.moveCmd.setState(self.moveCmd.Done)
+        # self.homeCmd = UserCmd()
+        # self.homeCmd.setState(self.homeCmd.Done)
         self.pollTimer = Timer()
         if fakeFilterWheel:
             self.FilterWheelClass = FakeFilterWheel
@@ -180,15 +182,18 @@ class ArcticFWActor(Actor):
         log.info("%s.cmd_home(userCmd=%s)"%(self, str(userCmd)))
         # print("%s.cmd_home(userCmd=%s)"%(self, str(userCmd)))
         self.status.isHoming = 1
-        self.writeToUsers("i", "isHoming=1", cmd=userCmd)
+        # self.writeToUsers("i", "isHoming=1", cmd=userCmd)
         # send out status (basically announce I'm homing)
-        # self.cmd_status(userCmd, setDone=False)
+        self.cmd_status(userCmd, setDone=False)
+        # self.homeCmd = userCmd
+        Timer(0.01, self.startHome, userCmd) # on a timer to make sure state is output before block
+        return True
+
+    def startHome(self, userCmd):
         self.filterWheel.home() # blocks
         self.status.isHomed = 1
         self.status.isHoming = 0
-        self.cmd_status(userCmd, setDone=False) # return full status after a home
-        userCmd.setState(userCmd.Done)
-        return True
+        self.cmd_status(userCmd, setDone=True) # return full status after a home
 
     def cmd_status(self, userCmd, setDone=True):
         """! Implement the status command
