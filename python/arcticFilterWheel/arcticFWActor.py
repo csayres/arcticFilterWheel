@@ -41,7 +41,7 @@ class ArcticFWStatus(object):
             ("isHoming", self.isHoming),
             ("encoderPos", self.currentEncoder),
             ("desiredStep", "NaN" if self.desiredStep is None else self.desiredStep),
-            ("currentStep", self.currentStep),
+            ("currentStep", "NaN" if self.currentStep is None else self.currentStep),
         ))
 
     @property
