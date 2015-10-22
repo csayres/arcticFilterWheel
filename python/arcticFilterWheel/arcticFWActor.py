@@ -180,12 +180,13 @@ class ArcticFWActor(Actor):
         log.info("%s.cmd_home(userCmd=%s)"%(self, str(userCmd)))
         # print("%s.cmd_home(userCmd=%s)"%(self, str(userCmd)))
         self.status.isHoming = 1
+        self.writeToUsers("i", "isHoming=1", cmd=userCmd)
         # send out status (basically announce I'm homing)
-        self.cmd_status(userCmd, setDone=False)
+        # self.cmd_status(userCmd, setDone=False)
         self.filterWheel.home() # blocks
         self.status.isHomed = 1
         self.status.isHoming = 0
-        self.cmd_status(userCmd, setDone=False)
+        self.cmd_status(userCmd, setDone=False) # return full status after a home
         userCmd.setState(userCmd.Done)
         return True
 
