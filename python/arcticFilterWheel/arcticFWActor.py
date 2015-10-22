@@ -17,15 +17,19 @@ from .fakeFilterWheel import FilterWheel as FakeFilterWheel
 UserPort = 37000
 
 class ArcticFWStatus(object):
+    Homing = "Homing"
+    NotHomed = "NotHomed"
+    Moving = "Moving"
+    Done = "Done"
     def __init__(self):
         self.id = 0
         self.currentEncoder = "NaN"
-        self.motor = 0
+        self.motor = False
         # self.hall = "?"
         self.position = 0
         # self.power = "?"
-        self.isHomed = 0
-        self.isHoming = 0
+        self.isHomed = False
+        self.isHoming = False
         self.desiredStep = "NaN"
         self.currentStep = "NaN"
         self._cmdFilterID = "NaN"
@@ -34,15 +38,35 @@ class ArcticFWStatus(object):
     def kwMap(self):
         return dict((
             ("wheelID", self.id),
-            ("filterID", self.position),
-            ("cmdFilterID", self.cmdFilterID),
-            ("isMoving", self.motor),
-            ("isHomed", self.isHomed),
-            ("isHoming", self.isHoming),
+            ("filterID", self.currFilterID),
+            ("cmdFilterID", "NaN" if self.cmdFilterID is None else self.cmdFilterID),
+            ("state", self.state),
             ("encoderPos", self.currentEncoder),
             ("desiredStep", "NaN" if self.desiredStep is None else self.desiredStep),
             ("currentStep", "NaN" if self.currentStep is None else self.currentStep),
         ))
+
+    @property
+    def state(self):
+        state = self.Done
+        if self.isHoming:
+            state = self.Homing
+        elif not self.isHomed:
+            state = self.NotHomed
+        elif self.motor:
+            state = self.Moving
+        return state
+
+    @property
+    def currFilterID(self):
+        # if not homed return "NaN", else position
+        if self.state != self.Done:
+            return "NaN"
+        elif self.position == 0:
+            # C controller doesn't know
+            return "NaN"
+        else:
+            return self.position
 
     @property
     def cmdFilterID(self):
@@ -58,7 +82,7 @@ class ArcticFWStatus(object):
     @property
     def moveStr(self):
         statusList = []
-        for kw in ["isMoving", "cmdFilterID"]:
+        for kw in ["state", "cmdFilterID"]:
             statusList.append("%s=%s"%(kw, str(self.kwMap[kw])))
         return "; ".join(statusList)
 
@@ -218,7 +242,14 @@ class ArcticFWActor(Actor):
             if not self.moveCmd.isDone:
                 log.info("current move done")
                 # print("current move done")
-                self.cmd_status(self.moveCmd) # status will set command done
+                # check for any error condition in move before setting done
+                if abs(self.status.desiredStep - self.status.currentStep) > 500:
+                    self.status.isHomed = 0
+                    self.cmd_status(self.moveCmd, setDone=False)
+                    self.moveCmd.setState(self.moveCmd.Failed, "Motor Step Err > 500, home filter wheel")
+                else:
+                    # no error detected report status and set done
+                    self.cmd_status(self.moveCmd, setDone=True)
         else:
             # motor is still moving, continue polling
             self.pollTimer.start(self.PollTime, self.pollStatus)

@@ -13,7 +13,8 @@ StatusDict = {
     "hall": "0000",
     "position": 0,
     "power": None,
-    "desiredStep": "NaN"
+    "desiredStep": 100,#"NaN",
+    "currentStep": 501,#"NaN"
 }
 
 
@@ -25,7 +26,6 @@ class FilterWheel(object):
         self.moveTimer.cancel()
         # StatusDict["motor"]=0
         StatusDict["motor"]=8
-
 
     def connect(self):
         """
