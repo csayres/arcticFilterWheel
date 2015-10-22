@@ -23,7 +23,8 @@ class FilterWheel(object):
 
     def stopMove(self):
         self.moveTimer.cancel()
-        StatusDict["motor"]=0
+        # StatusDict["motor"]=0
+        StatusDict["motor"]=8
 
 
     def connect(self):
@@ -58,7 +59,8 @@ class FilterWheel(object):
             -1 - unknown
         """
         StatusDict["position"] = int(pos)
-        StatusDict["motor"] = 1
+        # StatusDict["motor"] = 1
+        StatusDict["motor"] = 3
         self.moveTimer.start(MoveTime, self.stopMove)
         return self.status()
 

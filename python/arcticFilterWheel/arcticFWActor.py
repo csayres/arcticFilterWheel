@@ -57,9 +57,10 @@ class ArcticFWStatus(object):
 
     @property
     def moveStr(self):
-        # hack! when a move is commanded motor value returned by status is 3!! WTF?!
-        return "isMoving=1; cmdFilterID=%s"%(self.cmdFilterID,)
-
+        statusList = []
+        for kw in ["isMoving", "cmdFilterID"]:
+            statusList.append("%s=%s"%(kw, str(self.kwMap[kw])))
+        return "; ".join(statusList)
 
     @property
     def statusStr(self):
@@ -210,7 +211,7 @@ class ArcticFWActor(Actor):
         if self.status.motor == 0:
             if not self.moveCmd.isDone:
                 log.info("current move done")
-                print("current move done")
+                # print("current move done")
                 self.cmd_status(self.moveCmd) # status will set command done
         else:
             # motor is still moving, continue polling
@@ -223,6 +224,26 @@ class ArcticFWActor(Actor):
         for key, val in self.filterWheel.status().iteritems():
             if key == "position":
                 val += 1 # filter wheel is zero indexed
+            elif key == "motor":
+                # motor status values 1-7 indicate motion: see
+                # ACE-SDE_Manual_Rev_1.22-2.pdf pg 38 for full bit field
+                # eventually add code to detect states when motor value > 7?
+                # for now treat 0 as not moving, 1-7 as moving.
+                # although I think 7 sould be an impossible state (accel + decel?)
+                # whatever.
+                if val > 7:
+                    self.writeToUsers("w", "text=motor status > 7 detected!")
+                bitField = bin(val)[2:][::-1] # remove leading "0b" and reverse remaining bit field so lowest bit is first
+                # add zeros to bitField until it is at least 3 characters long (first 3 bits indicate motion)
+                while len(bitField) < 3:
+                    bitField += "0"
+                moving = False
+                for bit in bitField[:3]:
+                    if bit == "1":
+                        moving = True
+                        break
+                val = int(moving) # overwrite value to be be 0 or 1
+                    # loop from lowest to hightest bit (reverse)
             setattr(self.status, key, val)
 
 
