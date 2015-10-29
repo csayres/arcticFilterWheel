@@ -219,7 +219,7 @@ class ArcticFWActor(Actor):
         self.status.isHoming = 0
         self.cmd_status(userCmd, setDone=True) # return full status after a home
 
-    def cmd_status(self, userCmd, setDone=True):
+    def cmd_status(self, userCmd=None, setDone=True):
         """! Implement the status command
         @param[in]  userCmd  a twistedActor command with a parsedCommand attribute
         """
@@ -227,6 +227,7 @@ class ArcticFWActor(Actor):
         # print("%s.cmd_status(userCmd=%s)"%(self, str(userCmd)))
         # statusStr = self.getCameraStatus()
         # self.writeToUsers("i", statusStr, cmd=userCmd)
+        userCmd = expandUserCmd(userCmd)
         self.getStatus()
         self.writeToUsers("i", self.status.statusStr, cmd=userCmd)
         if setDone:
@@ -249,7 +250,9 @@ class ArcticFWActor(Actor):
                     self.moveCmd.setState(self.moveCmd.Failed, "Motor Step Err > 500, home filter wheel")
                 else:
                     # no error detected report status and set done
-                    self.cmd_status(self.moveCmd, setDone=True)
+                    # set move done first then command a full status
+                    self.moveCmd.setState(self.moveCmd.Done)
+                    self.cmd_status(self.moveCmd, setDone=False)
         else:
             # motor is still moving, continue polling
             self.pollTimer.start(self.PollTime, self.pollStatus)
