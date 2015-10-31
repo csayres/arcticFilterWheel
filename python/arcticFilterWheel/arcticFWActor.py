@@ -1,6 +1,7 @@
 from __future__ import division, absolute_import
 
 import syslog
+import collections
 
 
 from RO.Comm.TwistedTimer import Timer
@@ -36,11 +37,11 @@ class ArcticFWStatus(object):
 
     @property
     def kwMap(self):
-        return dict((
+        return collections.OrderedDict((
+            ("state", self.state),
             ("wheelID", self.id),
             ("filterID", self.currFilterID),
             ("cmdFilterID", "NaN" if self.cmdFilterID is None else self.cmdFilterID),
-            ("state", self.state),
             ("encoderPos", self.currentEncoder),
             ("desiredStep", "NaN" if self.desiredStep is None else self.desiredStep),
             ("currentStep", "NaN" if self.currentStep is None else self.currentStep),
