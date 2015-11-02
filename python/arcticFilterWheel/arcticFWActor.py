@@ -247,13 +247,13 @@ class ArcticFWActor(Actor):
                 # check for any error condition in move before setting done
                 if abs(self.status.desiredStep - self.status.currentStep) > 500:
                     self.status.isHomed = 0
-                    self.cmd_status(self.moveCmd, setDone=False)
                     self.moveCmd.setState(self.moveCmd.Failed, "Motor Step Err > 500, home filter wheel")
                 else:
                     # no error detected report status and set done
                     # set move done first then command a full status
-                    self.cmd_status(expandUserCmd(None), setDone=True)
+                    # so that state reports Done as
                     self.moveCmd.setState(self.moveCmd.Done)
+                self.cmd_status(expandUserCmd(None), setDone=True)
         else:
             # motor is still moving, continue polling
             self.pollTimer.start(self.PollTime, self.pollStatus)
