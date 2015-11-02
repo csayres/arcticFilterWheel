@@ -252,8 +252,8 @@ class ArcticFWActor(Actor):
                 else:
                     # no error detected report status and set done
                     # set move done first then command a full status
-                    self.moveCmd.setState(self.moveCmd.Done)
                     self.cmd_status(expandUserCmd(None), setDone=True)
+                    self.moveCmd.setState(self.moveCmd.Done)
         else:
             # motor is still moving, continue polling
             self.pollTimer.start(self.PollTime, self.pollStatus)
