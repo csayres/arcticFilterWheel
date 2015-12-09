@@ -47,6 +47,8 @@ class ArcticFWStatus(object):
             ("currentStep", "NaN" if self.currentStep is None else self.currentStep),
         ))
 
+
+
     @property
     def state(self):
         state = self.Done
@@ -71,11 +73,12 @@ class ArcticFWStatus(object):
 
     @property
     def cmdFilterID(self):
-        if self._cmdFilterID == "NaN" and not 1 in [self.motor, self.isHoming] and self.isHomed:
+        if self._cmdFilterID == "NaN" and not True in [self.motor, self.isHoming] and self.isHomed:
             # asked for commanded filter but currently set to NaN, everything looks fine
             # set it to commanded ID
-            self._cmdFilterID = self.position
-        return self._cmdFilterID # may return none
+            return self.position
+        else:
+            return self._cmdFilterID # may return none
 
     def setCmdFilterID(self, value):
         self._cmdFilterID = value
