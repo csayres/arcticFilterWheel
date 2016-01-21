@@ -5,23 +5,15 @@ from __future__ import division, absolute_import
 import os
 
 from twisted.internet import reactor
-from twistedActor import startFileLogging
+from twistedActor import startSystemLogging
 
 from arcticFilterWheel import ArcticFWActor
 
 
 UserPort = 37000
-# for now no logging
-# homeDir = os.getenv("HOME")
-# logDir = os.path.join(homeDir, "logs/arcticFilterWheel")
-
-# try:
-#     startFileLogging(logDir)
-# except KeyError:
-#    # don't start logging
-#    pass
 
 if __name__ == "__main__":
     print("arcticFilterWheel running on port %i"%UserPort)
+    startSystemLogging(ArcticFWActor.Facility)
     arcticFilterWheel = ArcticFWActor(name="arcticFilterWheel", userPort=UserPort)
     reactor.run()
