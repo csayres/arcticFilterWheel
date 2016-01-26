@@ -26,7 +26,7 @@ class ArcticFWStatus(object):
         self.id = 0
         self.currentEncoder = "NaN"
         self.motor = False
-        # self.hall = "?"
+        self.hall = "?"
         self.position = 0
         # self.power = "?"
         self.isHomed = False
@@ -43,6 +43,7 @@ class ArcticFWStatus(object):
             ("filterID", self.currFilterID),
             ("cmdFilterID", "NaN" if self.cmdFilterID is None else self.cmdFilterID),
             ("encoderPos", self.currentEncoder),
+            ("hall", self.hall),
             ("desiredStep", "NaN" if self.desiredStep is None else self.desiredStep),
             ("currentStep", "NaN" if self.currentStep is None else self.currentStep),
         ))
